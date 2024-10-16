@@ -2,6 +2,8 @@ import {Suspense} from 'react';
 import {Await, NavLink, useAsyncValue} from '@remix-run/react';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
+import { Image } from '@shopify/hydrogen';
+import Logo from '../../public/MM Logo.png';
 
 /**
  * @param {HeaderProps}
@@ -10,16 +12,24 @@ export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
   const {shop, menu} = header;
   return (
     <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
-      </NavLink>
+      
       <HeaderMenu
         menu={menu}
         viewport="desktop"
         primaryDomainUrl={header.shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
       />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
+        <Image src={Logo} width={28}/>
+      </NavLink>
+      {/* isLoggedIn={isLoggedIn} */}
+      <HeaderCtas 
+        menu={menu}
+        viewport="desktop"
+        primaryDomainUrl={header.shop.primaryDomain.url}
+        publicStoreDomain={publicStoreDomain}
+        cart={cart} 
+      />
     </header>
   );
 }
@@ -54,7 +64,7 @@ export function HeaderMenu({
           Home
         </NavLink>
       )}
-      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
+      {/* {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
         if (!item.url) return null;
 
         // if the url is internal, we strip the domain
@@ -77,7 +87,16 @@ export function HeaderMenu({
             {item.title}
           </NavLink>
         );
-      })}
+      })} */}
+      <NavLink
+          end
+          onClick={close}
+          prefetch="intent"
+          style={activeLinkStyle}
+          to="/"
+        >
+          Home
+        </NavLink>
     </nav>
   );
 }
@@ -85,18 +104,62 @@ export function HeaderMenu({
 /**
  * @param {Pick<HeaderProps, 'isLoggedIn' | 'cart'>}
  */
-function HeaderCtas({isLoggedIn, cart}) {
+function HeaderCtas({ 
+  menu,
+  primaryDomainUrl,
+  viewport,
+  publicStoreDomain, 
+  cart
+}) {
+  const {close} = useAside();
   return (
     <nav className="header-ctas" role="navigation">
       <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
+      {/* <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
         <Suspense fallback="Sign in">
           <Await resolve={isLoggedIn} errorElement="Sign in">
             {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
           </Await>
         </Suspense>
       </NavLink>
-      <SearchToggle />
+      <SearchToggle /> */}
+      {viewport === 'mobile' && (
+        <NavLink
+          end
+          onClick={close}
+          prefetch="intent"
+          style={activeLinkStyle}
+          to="/"
+        >
+          Home
+        </NavLink>
+      )}
+      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
+        if (!item.url) return null;
+
+        // if the url is internal, we strip the domain
+        const url =
+          item.url.includes('myshopify.com') ||
+          item.url.includes(publicStoreDomain) ||
+          item.url.includes(primaryDomainUrl)
+            ? new URL(item.url).pathname
+            : item.url;
+        if(url != '/'){
+        return (
+          <NavLink
+            className="header-menu-item"
+            end
+            key={item.id}
+            onClick={close}
+            prefetch="intent"
+            style={activeLinkStyle}
+            to={url}
+          >
+            {item.title}
+          </NavLink>
+        )
+      }
+      })}
       <CartToggle cart={cart} />
     </nav>
   );

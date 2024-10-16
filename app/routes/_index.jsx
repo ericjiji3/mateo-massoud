@@ -2,6 +2,8 @@ import {defer} from '@shopify/remix-oxygen';
 import {Await, useLoaderData, Link} from '@remix-run/react';
 import {Suspense} from 'react';
 import {Image, Money} from '@shopify/hydrogen';
+import { useState } from 'react';
+import Logo from '../../public/MM Logo.png';
 
 /**
  * @type {MetaFunction}
@@ -64,6 +66,7 @@ export default function Homepage() {
   const data = useLoaderData();
   return (
     <div className="home">
+      <Intro/>
       <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
@@ -75,6 +78,17 @@ export default function Homepage() {
  *   collection: FeaturedCollectionFragment;
  * }}
  */
+
+function Intro(){
+  const [clicked, setClicked] = useState(false);
+  return(
+    <div className={clicked ? 'intro inactive' : 'intro'} onClick={() => setClicked(true)}>
+      <h1>MATEO MASSOUD</h1>
+      <Image className="logo" src={Logo} width={500}/>
+      <h1 className="enter-button">ENTER</h1>
+    </div>
+  )
+}
 function FeaturedCollection({collection}) {
   if (!collection) return null;
   const image = collection?.image;
